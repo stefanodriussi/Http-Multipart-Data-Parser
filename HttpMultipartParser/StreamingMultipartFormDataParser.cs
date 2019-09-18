@@ -359,7 +359,7 @@ namespace HttpMultipartParser
         /// </returns>
         private int CalculateNewlineLength(ref byte[] data, int offset)
         {
-            byte[][] newlinePatterns = {Encoding.GetBytes("\r\n"), Encoding.GetBytes("\n")};
+            byte[][] newlinePatterns = { Encoding.GetBytes("\r\n"), Encoding.GetBytes("\n") };
 
             // Go through each pattern and find which one matches.
             foreach (var pattern in newlinePatterns)
@@ -538,8 +538,15 @@ namespace HttpMultipartParser
                     int maxNewlineBytes = Encoding.GetMaxByteCount(2);
                     int bufferNewlineOffset = FindNextNewline(
                         ref fullBuffer, Math.Max(0, endPos - maxNewlineBytes), maxNewlineBytes);
-                    int bufferNewlineLength = CalculateNewlineLength(ref fullBuffer, bufferNewlineOffset);
-
+                    int bufferNewlineLength = 0;
+                    try
+                    {
+                        bufferNewlineLength = CalculateNewlineLength(ref fullBuffer, bufferNewlineOffset);
+                    }
+                    catch
+                    {
+                        bufferNewlineLength = 2;
+                    }
                     // We've found an end. We need to consume all the binary up to it 
                     // and then write the remainder back to the original stream. Then we
                     // need to modify the original streams position to take into account
@@ -574,6 +581,7 @@ namespace HttpMultipartParser
                 // iteration of the loop.
                 prevLength = curLength;
             } while (prevLength != 0);
+            //readEndBoundary = true;
         }
 
         /// <summary>
